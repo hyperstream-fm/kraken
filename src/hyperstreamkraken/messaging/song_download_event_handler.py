@@ -8,6 +8,7 @@ from hyperstreamkraken.messaging.song_download_fail_event import SongDownloadFai
 from hyperstreamkraken.messaging.song_downloaded_event import SongDownloadedEvent
 from hyperstreamkraken.models.song import Song
 from hyperstreamkraken.storage.song_storage import SongStorage
+import logging
 
 logger: logging.Logger = logging.getLogger(__name__)
 
