@@ -9,6 +9,8 @@ from hyperstreamkraken.messaging.song_downloaded_event import SongDownloadedEven
 from hyperstreamkraken.models.song import Song
 from hyperstreamkraken.storage.song_storage import SongStorage
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class SongDownloadEventHandler(EventHandler[SongDownloadEvent]):
@@ -28,6 +30,7 @@ class SongDownloadEventHandler(EventHandler[SongDownloadEvent]):
                 )
             )
         except Exception as exception:
+            logger.exception(f"Failed to download or store song '{song_query}'")
             await self.event_bus.dispatch(
                 SongDownloadFailEvent.create(
                     event_bus=self.event_bus,
