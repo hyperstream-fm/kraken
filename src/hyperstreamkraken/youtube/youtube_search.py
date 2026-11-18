@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import logging
 from typing import Any, cast
-from urllib.parse import ParseResult, parse_qs, urlparse
 
 from yt_dlp import YoutubeDL
 from hyperstreamkraken.sugar.coalesce import coalesce
@@ -14,12 +13,18 @@ class YoutubeSearch:
 
 
 def search_on_youtube(query: str) -> YoutubeSearch:
-    search_query: str = f"ytsearch:{query}"
+    search_query: str = f"ytsearch1:{query}"
 
     yt_dlp_options: dict[str, Any] = {
-        "format": "bestaudio/best",
+        "extract_flat": True,
         "noplaylist": True,
         "quiet": True,
+        "source_address": "0.0.0.0",
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["web_embedded"],
+            }
+        },
         "logger": logging.getLogger(__name__),
     }
 
@@ -30,16 +35,15 @@ def search_on_youtube(query: str) -> YoutubeSearch:
             raise RuntimeError(f"No YouTube results for '{query}'")
 
         video_info: dict[str, Any] = cast(dict[str, Any], entries[0])
-        video_url: str = cast(str, video_info.get("webpage_url"))
-        video_parsed_url: ParseResult = urlparse(video_url)
-        video_url_params: dict[str, list[str]] = parse_qs(video_parsed_url.query)
-        video_id_parameter: str = "v"
+        video_id: str | None = video_info.get("id")
+        if not video_id:
+            raise ValueError(f"No video ID found in YouTube search result: {video_info}")
 
-        if video_id_parameter not in video_url_params:
-            raise ValueError(
-                f"No '{video_id_parameter}' HTTP param in YouTube url: {video_url}"
-            )
-
-        video_id: str = video_url_params[video_id_parameter][0]
+        video_url: str = cast(
+            str,
+            video_info.get("webpage_url")
+            or video_info.get("url")
+            or f"https://youtube.com{video_id}",
+        )
 
         return YoutubeSearch(url=video_url, id=video_id)
