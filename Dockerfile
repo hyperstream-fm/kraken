@@ -25,11 +25,8 @@ RUN apk add --no-cache \
     ffmpeg \
     libpq \
     curl \
-    unzip \
-    gcompat
+    deno
 
-
-RUN curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh -s -- -y
 
 COPY --from=builder /usr/local/lib/python3.13 /usr/local/lib/python3.13
 COPY --from=builder /usr/local/bin /usr/local/bin
